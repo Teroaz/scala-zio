@@ -1,7 +1,9 @@
-import zio._
-import zio.stream._
+package example
 
-object App extends ZIOAppDefault {
+import zio.*
+import zio.stream.*
+
+object Main extends ZIOAppDefault {
 
   override def run: ZIO[Any & (ZIOAppArgs & Scope), Any, Unit] =
     for {
