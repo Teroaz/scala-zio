@@ -1,5 +1,6 @@
 package example.models
 
+// TODO : Add Validation & constraints with NewTypes & OpaqueTypes
 case class RealEstate(
   category: String,
   rooms: Option[Int],
