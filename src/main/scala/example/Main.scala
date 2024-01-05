@@ -5,7 +5,8 @@ import io.github.cdimascio.dotenv.Dotenv
 import zio.*
 import zio.http.*
 import zio.stream.ZPipeline.gunzip
-import zio.stream.{ZPipeline, ZStream}
+import zio.stream.{ZPipeline, ZSink, ZStream}
+import zio.stream.*
 
 import java.text.SimpleDateFormat
 
@@ -179,7 +180,8 @@ object Main extends ZIOAppDefault {
   private def validateTransaction(transaction: Transaction): Boolean = {
     return transaction.amount > 0 &&
       transaction.estate.category == "Appartement" &&
-      transaction.nature != "Vente"
+      transaction.nature == "Vente" &&
+      transaction.estate.constructedArea.exists(_ > 0)
     //      transaction.estate.rooms.exists(_ >= 3) &&
     //      transaction.estate.constructedArea.exists(_ >= 60) &&
     //      transaction.estate.landArea.exists(_ >= 60)
@@ -189,7 +191,6 @@ object Main extends ZIOAppDefault {
   // TODO : Documentation
   private def loadTransactions(envVars: EnvVars) = {
     val urlsByYear = (envVars.startYear to envVars.endYear).map(year => (year, s"${envVars.dataUrl}/$year/full.csv.gz"))
-
     ZIO.foreachPar(urlsByYear) { case (year, url) =>
       Console.printLine(s"> [$year] Fetching data from $url")
 
@@ -201,8 +202,8 @@ object Main extends ZIOAppDefault {
             .flatMap(line => parseCsvLine(line, envVars.csvSeparator))
             .collectSome
             .filter(validateTransaction)
-            .runCollect
-            .map(transactions => year -> transactions)
+            .run(avgSink)
+            .map(avg => year -> avg)
         case None => ZIO.succeed(year -> Seq.empty[Transaction])
       }
     }
