@@ -1,6 +1,6 @@
 package example
 
-import example.models.{Location, RealEstate, Transaction}
+import example.models.{Location, Metric, RealEstate, Transaction}
 import io.github.cdimascio.dotenv.Dotenv
 import zio.*
 import zio.http.*
@@ -189,34 +189,39 @@ object Main extends ZIOAppDefault {
   }
 
   // TODO : Documentation
-  private def loadTransactions(envVars: EnvVars) = {
+  private def loadTransactions(envVars: EnvVars):  ZIO[Scope & Client, Throwable, Map[Int, ZStream[Any, Throwable, Transaction]]] = {
     val urlsByYear = (envVars.startYear to envVars.endYear).map(year => (year, s"${envVars.dataUrl}/$year/full.csv.gz"))
 
     ZIO.foreachPar(urlsByYear) { case (year, url) =>
-      Console.printLine(s"> [$year] Fetching data from $url").flatMap { _ =>
-        fetchData(url).flatMap {
-          case Some(dataStream) =>
-            decompressGzippedData(dataStream)
-              .via(ZPipeline.utf8Decode)
-              .via(ZPipeline.splitLines)
-              .flatMap(line => parseCsvLine(line, envVars.csvSeparator))
-              .collectSome
-              .filter(validateTransaction)
-              .broadcast(4, 16)
-              .flatMap { streams =>
-                for {
-                  avgPerM2Fiber <- streams(0).run(avgPerM2Sink).fork
-                  distribFiber <- streams(1).run(realEstateCategoryDistributionSink).fork
-                  avgFiber <- streams(2).run(avgSink).fork
-                  countFiber <- streams(3).runCount.fork
-                  avgPerM2 <- avgPerM2Fiber.join
-                  distrib <- distribFiber.join
-                  avg <- avgFiber.join
-                  count <- countFiber.join
-                } yield (year, avgPerM2, distrib, avg, count)
-              }
-          case None => ZIO.succeed((year, 0.0, (0.0, 0.0)))
-        }
+      Console.printLine(s"> [$year] Fetching data from $url")
+
+      fetchData(url).flatMap {
+        case Some(dataStream) =>
+          ZIO.succeed(
+            year -> decompressGzippedData(dataStream)
+            .via(ZPipeline.utf8Decode)
+            .via(ZPipeline.splitLines)
+            .flatMap(line => parseCsvLine(line, envVars.csvSeparator))
+            .collectSome
+            .filter(validateTransaction))
+        case None => ZIO.succeed(year -> ZStream.empty)
+      }
+    }.map(_.toMap)
+  }
+
+  def computeMetrics(transactionStream: ZStream[Any, Throwable, Transaction]): ZIO[Any, Throwable, Metric] = {
+    ZIO.scoped {
+      transactionStream.broadcast(4, 16).flatMap { streams =>
+        for {
+          avgPerM2Fiber <- streams(0).run(avgPerM2Sink).forkScoped
+          distribFiber <- streams(1).run(realEstateCategoryDistributionSink).forkScoped
+          avgFiber <- streams(2).run(avgSink).forkScoped
+          countFiber <- streams(3).runCount.forkScoped
+          avgPerM2 <- avgPerM2Fiber.join
+          distrib <- distribFiber.join
+          avg <- avgFiber.join
+          count <- countFiber.join
+        } yield Metric(avg, avgPerM2, count, distrib)
       }
     }
   }
@@ -225,20 +230,12 @@ object Main extends ZIOAppDefault {
     val program = for {
       envVars <- loadEnvVars()
       transactionsByYear <- loadTransactions(envVars)
-      _ <- ZIO.foreach(transactionsByYear) {
-        case (year, avgPerM2, (percentMaisons, percentAppartements), avg, count) =>
-          val formattedOutput =
-            f"""
-               | Results for year $year
-               | Total transaction : $count
-               | Mean price per square meter : $avgPerM2%.2feuros
-               | Mean transaction price : $avg%.2feuros
-               | Real estate distribution :
-               |   - House : $percentMaisons%.2f%%
-               |   - Apartments : $percentAppartements%.2f%%
-          """.stripMargin
-          Console.printLine(formattedOutput)
-        case _ => Console.printLine(s"Problem formatting data : $transactionsByYear")
+      _ <- ZIO.foreachPar(transactionsByYear) {
+        case (year, transactionStream) =>
+          computeMetrics(transactionStream).flatMap { metrics =>
+            println(s"$year : $metrics")
+            ZIO.succeed(year, transactionStream)
+          }
       }
     } yield ()
     program.provide(Client.default, Scope.default)
