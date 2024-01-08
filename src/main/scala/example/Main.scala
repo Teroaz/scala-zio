@@ -247,7 +247,7 @@ object Main extends ZIOAppDefault {
     }
   }
 
-  private def getUserFilters: ZIO[Console, IOException, UserFilters] = for {
+  private def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
     year <- readLine("Entrez l'année de la transaction (ou laissez vide) : ").map(_.toIntOption)
     minAmount <- readLine("Entrez le montant minimum (ou laissez vide) : ").map(_.toIntOption)
     maxAmount <- readLine("Entrez le montant maximun (ou laissez vide) : ").map(_.toIntOption)
