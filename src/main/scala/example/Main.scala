@@ -1,16 +1,19 @@
 package example
 
-import example.models.{Location, Metric, RealEstate, Transaction}
+import example.models.*
 import example.types.RealEstateTypes._
 import example.types.LocationTypes._
 import io.github.cdimascio.dotenv.Dotenv
 import zio.*
+import zio.Console.readLine
 import zio.http.*
 import zio.stream.ZPipeline.gunzip
-import zio.stream.{ZPipeline, ZSink, ZStream}
-import zio.stream.*
+import zio.stream.{ZPipeline, ZStream}
 
-import java.text.SimpleDateFormat
+import java.io.IOException
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, ZoneId}
+import java.util.Date
 
 object Main extends ZIOAppDefault {
 
@@ -115,6 +118,9 @@ object Main extends ZIOAppDefault {
     gzipped.via(gunzip(bufferSize))
   }
 
+  private val zoneId: ZoneId = ZoneId.systemDefault()
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
   /**
    * Parses a single line of a CSV file and attempts to create a `Transaction` object from it.
    *
@@ -144,10 +150,10 @@ object Main extends ZIOAppDefault {
   private def parseCsvLine(line: String, separator: Option[String]): ZStream[Any, Nothing, Option[Transaction]] = {
     ZStream.succeed {
       try {
-        val fields = line.split(separator.getOrElse(",")).map(_.trim)
+        val fields = line.split(separator.getOrElse(","))
 
-        val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
-        val date = dateFormatter.parse(fields(1))
+        val localDate = LocalDate.parse(fields(1), dateFormatter)
+        val date = Date.from(localDate.atStartOfDay(zoneId).toInstant)
         val nature = fields(3)
         val amount = fields(4).toDouble
 
@@ -204,7 +210,7 @@ object Main extends ZIOAppDefault {
   }
 
   // TODO : Documentation
-  private def loadTransactions(envVars: EnvVars):  ZIO[Scope & Client, Throwable, Map[Int, ZStream[Any, Throwable, Transaction]]] = {
+  private def loadTransactions(envVars: EnvVars): ZIO[Scope & Client, Throwable, Map[Int, ZStream[Any, Throwable, Transaction]]] = {
     val urlsByYear = (envVars.startYear to envVars.endYear).map(year => (year, s"${envVars.dataUrl}/$year/full.csv.gz"))
 
     ZIO.foreachPar(urlsByYear) { case (year, url) =>
@@ -214,17 +220,17 @@ object Main extends ZIOAppDefault {
         case Some(dataStream) =>
           ZIO.succeed(
             year -> decompressGzippedData(dataStream)
-            .via(ZPipeline.utf8Decode)
-            .via(ZPipeline.splitLines)
-            .flatMap(line => parseCsvLine(line, envVars.csvSeparator))
-            .collectSome
-            .filter(validateTransaction))
+              .via(ZPipeline.utf8Decode)
+              .via(ZPipeline.splitLines)
+              .flatMap(line => parseCsvLine(line, envVars.csvSeparator))
+              .collectSome
+              .filter(validateTransaction))
         case None => ZIO.succeed(year -> ZStream.empty)
       }
     }.map(_.toMap)
   }
 
-  def computeMetrics(transactionStream: ZStream[Any, Throwable, Transaction]): ZIO[Any, Throwable, Metric] = {
+  private def computeMetrics(transactionStream: ZStream[Any, Throwable, Transaction]): ZIO[Any, Throwable, Metric] = {
     ZIO.scoped {
       transactionStream.broadcast(4, 16).flatMap { streams =>
         for {
@@ -241,18 +247,48 @@ object Main extends ZIOAppDefault {
     }
   }
 
+  private def getUserFilters: ZIO[Console, IOException, UserFilters] = for {
+    year <- readLine("Entrez l'année de la transaction (ou laissez vide) : ").map(_.toIntOption)
+    minAmount <- readLine("Entrez le montant minimum (ou laissez vide) : ").map(_.toIntOption)
+    maxAmount <- readLine("Entrez le montant maximun (ou laissez vide) : ").map(_.toIntOption)
+    propertyType <- readLine("Entrez le type de bien (appartement/maison) (ou laissez vide) : ")
+  } yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType))
+
+
+
+  private def filterTransactions(
+    transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],
+    filters: UserFilters
+  ): ZStream[Any, Throwable, Transaction] = {
+
+    ZStream.fromIterable(transactionsByYear).flatMap { case (year, transactions) =>
+      transactions.filter { transaction =>
+        val yearFilter = filters.year.fold(true)(_ == transaction.date.getYear)
+        val minAmountFilter = filters.minAmount.fold(true)(_ <= transaction.amount)
+        val propertyTypeFilter = filters.propertyType.fold(true)(_ == Category.value(transaction.estate.category))
+        yearFilter && minAmountFilter && propertyTypeFilter
+      }
+    }
+  }
+
+
   override def run = {
+
     val program = for {
       envVars <- loadEnvVars()
       transactionsByYear <- loadTransactions(envVars)
-      _ <- ZIO.foreachPar(transactionsByYear) {
-        case (year, transactionStream) =>
-          computeMetrics(transactionStream).flatMap { metrics =>
-            println(s"$year : $metrics")
-            ZIO.succeed(year, transactionStream)
-          }
-      }
+      _ <- Console.printLine("hello")
+      _ <- getUserFilters.flatMap { filters =>
+        val filteredTransactions = filterTransactions(transactionsByYear, filters)
+        for {
+          metrics <- computeMetrics(filteredTransactions)
+          _ <- Console.printLine(metrics.toString)
+        } yield ()
+
+      }.forever
     } yield ()
+
     program.provide(Client.default, Scope.default)
   }
 }
+
