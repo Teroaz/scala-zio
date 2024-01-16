@@ -1,6 +1,8 @@
 package example
 
 import example.models.{Location, Metric, RealEstate, Transaction}
+import example.types.RealEstateTypes._
+import example.types.LocationTypes._
 import io.github.cdimascio.dotenv.Dotenv
 import zio.*
 import zio.http.*
@@ -149,39 +151,52 @@ object Main extends ZIOAppDefault {
         val nature = fields(3)
         val amount = fields(4).toDouble
 
-        val location = Location(
+        val location = for {
+          postalCode <- PostalCode(fields(9))
+          departmentCode <- DepartmentCode(fields(12))
+          geoPoint <- GeoPoint(fields(38).toDouble, fields(39).toDouble)
+        } yield Location(
           number = Option(fields(5)).filter(_.nonEmpty).map(_.toInt),
           suffix = Option(fields(6)),
           street = fields(7),
-          postalCode = fields(9),
           city = fields(11),
-          departmentCode = fields(12),
-          latitude = fields(38).toDouble,
-          longitude = fields(39).toDouble
+          departmentCode = departmentCode,
+          postalCode = postalCode,
+          geoPoint = geoPoint
         )
 
-        val estate = RealEstate(
-          category = fields(30),
-          rooms = Option(fields(32)).filter(_.nonEmpty).map(_.toInt),
-          location = location,
-          constructedArea = Option(fields(31)).filter(_.nonEmpty).map(_.toInt),
-          landArea = Option(fields(37)).filter(_.nonEmpty).map(_.toInt)
+        for {
+          loc <- location
+          category <- Category(fields(30))
+          roomCount <- Option(fields(32)).filter(_.nonEmpty).flatMap(s => RoomCount(s.toInt))
+          constArea <- Option(fields(31)).filter(_.nonEmpty).flatMap(s => ConstructedArea(s.toInt))
+          landArea <- Option(fields(37)).filter(_.nonEmpty).flatMap(s => LandArea(s.toInt))
+        } yield Transaction(
+          date,
+          nature,
+          amount,
+          RealEstate(
+            category = category,
+            rooms = roomCount,
+            location = loc,
+            constructedArea = constArea,
+            landArea = landArea
+          )
         )
-
-        Some(Transaction(date, nature, amount, estate))
       } catch {
         case e: Throwable => None
       }
     }
   }
 
+
   // TODO : Documentation
   // TODO : Add more filters
   private def validateTransaction(transaction: Transaction): Boolean = {
     return transaction.amount > 0 &&
-      (transaction.estate.category == "Appartement" || transaction.estate.category == "Maison") &&
+      (transaction.estate.category.equals("Appartement") || transaction.estate.category.equals("Maison")) &&
       transaction.nature == "Vente" &&
-      transaction.estate.constructedArea.exists(_ > 0)
+      transaction.estate.constructedArea > 0
     //      transaction.estate.rooms.exists(_ >= 3) &&
     //      transaction.estate.constructedArea.exists(_ >= 60) &&
     //      transaction.estate.landArea.exists(_ >= 60)
