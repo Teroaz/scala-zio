@@ -269,7 +269,7 @@ object Main extends ZIOAppDefault {
     yearFilteredStream.filter { transaction =>
       filters.minAmount.forall(transaction.amount >= _) &&
         filters.maxAmount.forall(transaction.amount <= _) &&
-        filters.propertyType.forall(transaction.estate.category == _)
+        filters.propertyType.forall(Category.value(transaction.estate.category) == _)
     }
   }
 
