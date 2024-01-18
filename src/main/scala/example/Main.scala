@@ -232,17 +232,34 @@ object Main extends ZIOAppDefault {
 
   private def computeMetrics(transactionStream: ZStream[Any, Throwable, Transaction]): ZIO[Any, Throwable, Metric] = {
     ZIO.scoped {
-      transactionStream.broadcast(4, 16).flatMap { streams =>
+      transactionStream.broadcast(8, 16).flatMap { streams =>
         for {
           avgPerM2Fiber <- streams(0).run(avgPerM2Sink).forkScoped
           distribFiber <- streams(1).run(realEstateCategoryDistributionSink).forkScoped
-          avgFiber <- streams(2).run(avgSink).forkScoped
+          avgFiber <- streams(2).run(avgAmountSink).forkScoped
           countFiber <- streams(3).runCount.forkScoped
+          avgRoomFiber <- streams(4).run(avgRoomSink).forkScoped
+          avgConstructedAreaFiber <- streams(5).run(avgConstructedAreaSink).forkScoped
+          avgLandAreaFiber <- streams(6).run(avgLandAreaSink).forkScoped
+          medianTransactionAmountFiber <- streams(7).run(medianAmountSink).forkScoped
           avgPerM2 <- avgPerM2Fiber.join
           distrib <- distribFiber.join
           avg <- avgFiber.join
           count <- countFiber.join
-        } yield Metric(avg, avgPerM2, count, distrib)
+          avgRoom <- avgRoomFiber.join
+          avgConstructedArea <- avgConstructedAreaFiber.join
+          avgLandArea <- avgLandAreaFiber.join
+          medianTransactionAmount <- medianTransactionAmountFiber.join
+        } yield Metric(
+          averagePrice = avg,
+          averagePricePerSquareMeter = avgPerM2,
+          averageRoomCount = avgRoom,
+          averageConstructedArea = avgConstructedArea,
+          averageLandArea = avgLandArea,
+          medianTransactionAmount = medianTransactionAmount,
+          transactionCount = count,
+          housingNatureDistribution = distrib
+        )
       }
     }
   }

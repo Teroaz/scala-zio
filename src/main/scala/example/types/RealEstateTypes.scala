@@ -17,6 +17,8 @@ object RealEstateTypes {
     def apply(value: Int): Option[RoomCount] =
       if (isValidRoomCount(value)) Some(value) else None
 
+    def value(count: RoomCount): Int = count
+
     private def isValidRoomCount(value: Int): Boolean = value > 0
   }
 
@@ -40,5 +42,7 @@ object RealEstateTypes {
       if (isValidArea(value)) Some(value) else None
 
     private def isValidArea(value: Int): Boolean = value > 0
+
+    def value(area: LandArea): Int = area
   }
 }
