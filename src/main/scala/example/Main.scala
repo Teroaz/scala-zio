@@ -255,19 +255,21 @@ object Main extends ZIOAppDefault {
   } yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType))
 
 
-
   private def filterTransactions(
-    transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],
-    filters: UserFilters
-  ): ZStream[Any, Throwable, Transaction] = {
+                                  transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],
+                                  filters: UserFilters
+                                ): ZStream[Any, Throwable, Transaction] = {
 
-    ZStream.fromIterable(transactionsByYear).flatMap { case (year, transactions) =>
-      transactions.filter { transaction =>
-        val yearFilter = filters.year.fold(true)(_ == transaction.date.getYear)
-        val minAmountFilter = filters.minAmount.fold(true)(_ <= transaction.amount)
-        val propertyTypeFilter = filters.propertyType.fold(true)(_ == Category.value(transaction.estate.category))
-        yearFilter && minAmountFilter && propertyTypeFilter
-      }
+    val yearFilteredStream = filters.year match {
+      case Some(yr) => transactionsByYear.getOrElse(yr, ZStream.empty)
+      case None => transactionsByYear.getOrElse(2018, ZStream.empty)
+    }
+
+    // Step 2: Apply Other Filters
+    yearFilteredStream.filter { transaction =>
+      filters.minAmount.forall(transaction.amount >= _) &&
+        filters.maxAmount.forall(transaction.amount <= _) &&
+        filters.propertyType.forall(transaction.estate.category == _)
     }
   }
 
@@ -277,14 +279,12 @@ object Main extends ZIOAppDefault {
     val program = for {
       envVars <- loadEnvVars()
       transactionsByYear <- loadTransactions(envVars)
-      _ <- Console.printLine("hello")
       _ <- getUserFilters.flatMap { filters =>
         val filteredTransactions = filterTransactions(transactionsByYear, filters)
         for {
           metrics <- computeMetrics(filteredTransactions)
-          _ <- Console.printLine(metrics.toString)
+          _ <- Console.printLine(s"Metrics: $metrics")
         } yield ()
-
       }.forever
     } yield ()
 
