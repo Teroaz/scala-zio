@@ -14,7 +14,8 @@ lazy val root = project
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
       "dev.zio" %% "zio-http" % "3.0.0-RC3",
-      "io.github.cdimascio" % "dotenv-java" % "3.0.0"
+      "io.github.cdimascio" % "dotenv-java" % "3.0.0",
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
+      "com.github.poslegm" %% "munit-zio" % "0.1.1" % Test
     ),
-    libraryDependencies += "org.scalameta" %% "munit" % "0.7.29" % Test
   )

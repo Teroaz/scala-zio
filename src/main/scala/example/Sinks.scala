@@ -14,7 +14,7 @@ val avgPerM2Sink: ZSink[Any, Nothing, Transaction, Nothing, Double] =
   ZSink.foldLeft[Transaction, (Double, Int)]((0.0, 0)) {
     case ((total, count), transaction) =>
       val area = ConstructedArea.value(transaction.estate.constructedArea)
-      if (area > 0) (total + amountPerArea(transaction.amount,area), count + 1)
+      if (area > 0) (total + amountPerArea(transaction.amount, area), count + 1)
       else (total, count)
   }.map {
     case (total, count) if count > 0 => total / count
@@ -44,6 +44,6 @@ val avgSink: ZSink[Any, Nothing, Transaction, Nothing, Double] =
     case ((total, count), transaction) =>
       (total + transaction.amount, count + 1)
   }.map {
-    case (total, count) if count >0 => total / count
+    case (total, count) if count > 0 => total / count
     case _ => 0.0
   }
