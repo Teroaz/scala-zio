@@ -11,23 +11,24 @@ case class Metric(
                    housingNatureDistribution: (Double, Double)
                  ) {
   override def toString: String = {
-    val priceFormatted = f"$averagePrice%.2f"
-    val pricePerSqMeterFormatted = f"$averagePricePerSquareMeter%.2f"
-    val avgRoomCountFormatted = f"$averageRoomCount%.2f"
-    val avgConstructedAreaFormatted = f"$averageConstructedArea%.2f"
-    val avgLandAreaFormatted = f"$averageLandArea%.2f"
-    val medianTransactionAmountFormatted = medianTransactionAmount.map(amount => f"$amount%.2f").getOrElse("N/A")
-    val distributionFormatted = f"${housingNatureDistribution._1}%.2f%% (Maisons), ${housingNatureDistribution._2}%.2f%% (Appartements)"
+    val priceFormatted = f"${averagePrice / 1000}%.0f kEUR"
+    val pricePerSqMeterFormatted = f"$averagePricePerSquareMeter%.2f EUR/m2"
+    val avgRoomCountFormatted = f"$averageRoomCount%.2f chambres"
+    val avgConstructedAreaFormatted = f"$averageConstructedArea%.2f m2"
+    val avgLandAreaFormatted = f"$averageLandArea%.2f m2"
+    val medianTransactionAmountFormatted = medianTransactionAmount.map(amount => f"${amount / 1000}%.0f kEUR").getOrElse("N/A")
+    val distributionFormatted = f"${housingNatureDistribution._1}%.2f%% Maisons, ${housingNatureDistribution._2}%.2f%% Appartements"
 
     s"""
-       |  averagePrice = $priceFormatted,
-       |  averagePricePerSquareMeter = $pricePerSqMeterFormatted,
-       |  averageRoomCount = $avgRoomCountFormatted,
-       |  averageConstructedArea = $avgConstructedAreaFormatted,
-       |  averageLandArea = $avgLandAreaFormatted,
-       |  medianTransactionAmount = $medianTransactionAmountFormatted,
-       |  transactionCount = $transactionCount,
-       |  housingNatureDistribution = $distributionFormatted
-          """.stripMargin
+       |Metrics:
+       |  Transactions : $transactionCount,
+       |  Average price = $priceFormatted,
+       |  Average price/m2 = $pricePerSqMeterFormatted,
+       |  Average rooms = $avgRoomCountFormatted,
+       |  Average constructed area = $avgConstructedAreaFormatted,
+       |  Average land Area = $avgLandAreaFormatted,
+       |  Median transaction amount = $medianTransactionAmountFormatted,
+       |  Housing nature distribution = $distributionFormatted
+       """.stripMargin
   }
 }

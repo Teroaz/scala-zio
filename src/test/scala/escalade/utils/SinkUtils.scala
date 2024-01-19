@@ -1,7 +1,7 @@
 package escalade.utils
 
 import escalade.models.{Location, RealEstate, Transaction}
-import escalade.types.LocationTypes.{DepartmentCode, GeoPoint, PostalCode}
+import escalade.types.LocationTypes.{City, DepartmentCode, GeoPoint, PostalCode}
 import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 
 import java.util.Date
@@ -25,7 +25,7 @@ def generateTransactions(n: Int,
           suffix = Some("A"),
           street = "Rue de l'Exemple",
           postalCode = PostalCode("75000").get,
-          city = "Paris",
+          city = City("Paris").get,
           departmentCode = DepartmentCode("75").get,
           geoPoint = GeoPoint(Random.nextDouble(), Random.nextDouble()).get
         ),
