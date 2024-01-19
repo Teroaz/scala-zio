@@ -18,14 +18,14 @@ import java.io.IOException
  * @return A ZIO effect that yields UserFilters with user-provided criteria or an IOException on error.
  */
 def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
-  year <- readLine("Entrez l'année de la transaction (ou laissez vide) : ").map(_.toIntOption)
-  minAmount <- readLine("Entrez le montant minimum (ou laissez vide) : ").map(_.toIntOption)
-  maxAmount <- readLine("Entrez le montant maximum (ou laissez vide) : ").map(_.toIntOption)
-  propertyType <- readLine("Entrez le type de bien (appartement/maison) (ou laissez vide) : ")
+  year <- readLine("Enter the transaction year (or leave empty): ").map(_.toIntOption)
+  minAmount <- readLine("Enter the minimum amount (or leave empty): ").map(_.toIntOption)
+  maxAmount <- readLine("Enter the maximum amount (or leave empty): ").map(_.toIntOption)
+  propertyType <- readLine("Enter the property type (apartment/house) (or leave empty): ")
 
-  _ <- printLine("Voulez-vous appliquer un filtre géographique ? (oui/non)")
+  _ <- printLine("Do you want to apply a geographic filter? (yes/no)")
   geographicChoice <- readLine
-  geographicFilter <- if (geographicChoice.toLowerCase == "oui") getGeographicFilters else ZIO.succeed(None)
+  geographicFilter <- if (geographicChoice.toLowerCase == "yes") getGeographicFilters else ZIO.succeed(None)
 } yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType), geographicFilter)
 
 
@@ -41,21 +41,21 @@ def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
  */
 def getGeographicFilters: ZIO[Any, IOException, Option[GeographicFilter]] = {
   def selectFilter: ZIO[Any, IOException, Option[GeographicFilter]] = for {
-    _ <- printLine("Choisissez un filtre : 1 - Ville, 2 - Département")
+    _ <- printLine("Choose a filter: 1 - City, 2 - Department")
     choice <- readLine
     filter <- choice match {
       case "1" =>
-        readLine("Entrez le nom de la ville : ")
+        readLine("Enter the city name: ")
           .map(City(_))
           .map(optCity => optCity.map(city => CityFilter.apply(city)))
 
       case "2" =>
-        readLine("Entrez le code du département : ")
+        readLine("Enter the department code: ")
           .map(DepartmentCode(_))
           .map(optDeptCode => optDeptCode.map(deptCode => DepartmentFilter.apply(deptCode)))
 
       case _ =>
-        printLine("Choix invalide. Veuillez réessayer.").flatMap(_ => selectFilter)
+        printLine("Invalid choice. Please try again.").flatMap(_ => selectFilter)
     }
   } yield filter
 
