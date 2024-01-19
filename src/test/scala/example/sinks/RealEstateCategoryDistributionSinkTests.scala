@@ -2,7 +2,7 @@ package example.sinks
 
 import example.models.*
 import example.types.RealEstateTypes.*
-import example.realEstateCategoryDistributionSink
+import example.services.*
 import example.utils.generateTransactions
 import munit.*
 import zio.*

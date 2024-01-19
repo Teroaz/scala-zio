@@ -1,6 +1,7 @@
 package example.sinks
 
-import example.avgAmountSink
+import example.services.avgAmountSink
+import example.services.*
 import example.utils.*
 import munit.*
 import zio.*
