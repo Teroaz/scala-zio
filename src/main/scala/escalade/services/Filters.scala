@@ -41,7 +41,7 @@ def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
  */
 def getGeographicFilters: ZIO[Any, IOException, Option[GeographicFilter]] = {
   def selectFilter: ZIO[Any, IOException, Option[GeographicFilter]] = for {
-    _ <- printLine("Choose a filter: 1 - City, 2 - Department")
+    _ <- printLine("Choose a filter: 1 - City, 2 - Department (4 or 5 digits)")
     choice <- readLine
     filter <- choice match {
       case "1" =>

@@ -17,7 +17,7 @@ case class Metric(
     val avgConstructedAreaFormatted = f"$averageConstructedArea%.2f m2"
     val avgLandAreaFormatted = f"$averageLandArea%.2f m2"
     val medianTransactionAmountFormatted = medianTransactionAmount.map(amount => f"${amount / 1000}%.0f kEUR").getOrElse("N/A")
-    val distributionFormatted = f"${housingNatureDistribution._1}%.2f%% Maisons, ${housingNatureDistribution._2}%.2f%% Appartements"
+    val distributionFormatted = f"${housingNatureDistribution._1}%.2f%% Houses, ${housingNatureDistribution._2}%.2f%% Apartments"
 
     s"""
        |Metrics:
