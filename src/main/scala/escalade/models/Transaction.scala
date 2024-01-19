@@ -1,4 +1,4 @@
-package example.models
+package escalade.models
 
 import java.util.Date
 

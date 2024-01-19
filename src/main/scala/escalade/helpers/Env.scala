@@ -1,7 +1,7 @@
-package example.helpers
+package escalade.helpers
 
-import example.EnvVars
-import example.models.Transaction
+import escalade.EnvVars
+import escalade.models.Transaction
 import zio.http.Client
 import zio.stream.ZStream
 import zio.{Scope, ZIO}

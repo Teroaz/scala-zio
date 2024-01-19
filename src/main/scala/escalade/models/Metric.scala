@@ -1,4 +1,4 @@
-package example.models
+package escalade.models
 
 case class Metric(
                    averagePrice: Double,

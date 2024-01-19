@@ -1,8 +1,8 @@
-package example.utils
+package escalade.utils
 import java.util.Date
-import example.models.{Location, RealEstate, Transaction}
-import example.types.LocationTypes.{DepartmentCode, GeoPoint, PostalCode}
-import example.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
+import escalade.models.{Location, RealEstate, Transaction}
+import escalade.types.LocationTypes.{DepartmentCode, GeoPoint, PostalCode}
+import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 
 import scala.util.Random
 

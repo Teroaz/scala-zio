@@ -1,9 +1,9 @@
-package example.sinks
+package escalade.sinks
 
-import example.models.*
-import example.types.RealEstateTypes.*
-import example.services.*
-import example.utils.generateTransactions
+import escalade.models.*
+import escalade.types.RealEstateTypes.*
+import escalade.services.*
+import escalade.utils.generateTransactions
 import munit.*
 import zio.*
 import zio.stream.ZStream

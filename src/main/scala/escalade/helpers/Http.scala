@@ -1,4 +1,4 @@
-package example.helpers
+package escalade.helpers
 
 import zio.Console.printLine
 import zio.http.ZClient.{Config, live}

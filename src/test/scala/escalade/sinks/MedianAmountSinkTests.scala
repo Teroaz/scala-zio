@@ -1,7 +1,7 @@
-package example.sinks
+package escalade.sinks
 
-import example.services.medianAmountSink
-import example.utils.*
+import escalade.services.medianAmountSink
+import escalade.utils.*
 import munit.*
 import zio.*
 import zio.stream.ZStream

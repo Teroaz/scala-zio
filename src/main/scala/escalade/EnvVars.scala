@@ -1,4 +1,4 @@
-package example
+package escalade
 
 // TODO : Add Validation & constraints with NewTypes & OpaqueTypes
 case class EnvVars(

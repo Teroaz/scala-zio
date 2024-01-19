@@ -1,4 +1,4 @@
-package example.types
+package escalade.types
 
 object RealEstateTypes {
   opaque type Category = String

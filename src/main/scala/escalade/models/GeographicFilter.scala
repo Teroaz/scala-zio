@@ -1,6 +1,6 @@
-package example.models
+package escalade.models
 
-import example.types.LocationTypes._
+import escalade.types.LocationTypes._
 
 sealed trait GeographicFilter
 

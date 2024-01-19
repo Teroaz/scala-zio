@@ -1,8 +1,8 @@
-package example.helpers
+package escalade.helpers
 
-import example.models.{Location, RealEstate, Transaction}
-import example.types.LocationTypes.{City, DepartmentCode, GeoPoint, PostalCode}
-import example.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
+import escalade.models.{Location, RealEstate, Transaction}
+import escalade.types.LocationTypes.{City, DepartmentCode, GeoPoint, PostalCode}
+import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 import zio.stream.ZPipeline.gunzip
 import zio.stream.ZStream
 
@@ -36,8 +36,8 @@ private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy
  * @throws Throwable Silently handles any throwable (e.g., parsing errors) by emitting `None`.
  *                   This behavior ensures that a single malformed line does not disrupt the
  *                   processing of an entire CSV file.
- * @see [[zio.stream.ZStream]], [[java.text.SimpleDateFormat]], [[example.models.Transaction]],
- *      [[example.models.RealEstate]], [[example.models.Location]]
+ * @see [[zio.stream.ZStream]], [[java.text.SimpleDateFormat]], [[escalade.models.Transaction]],
+ *      [[escalade.models.RealEstate]], [[escalade.models.Location]]
  */
 def parseCsvLine(line: String, separator: Option[String]): ZStream[Any, Nothing, Option[Transaction]] = {
   ZStream.succeed {

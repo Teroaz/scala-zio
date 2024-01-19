@@ -1,5 +1,5 @@
-package example.models
-import example.types.RealEstateTypes._
+package escalade.models
+import escalade.types.RealEstateTypes._
 case class RealEstate(
                        category: Category,
                        rooms: RoomCount,

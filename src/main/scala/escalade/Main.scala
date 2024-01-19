@@ -1,7 +1,7 @@
-package example
+package escalade
 
-import example.helpers.*
-import example.services.*
+import escalade.helpers.*
+import escalade.services.*
 import zio.*
 import zio.http.*
 

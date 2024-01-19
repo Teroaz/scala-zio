@@ -1,8 +1,8 @@
-package example.services
+package escalade.services
 
-import example.models.GeographicFilter.{CityFilter, DepartmentFilter}
-import example.models.{GeographicFilter, UserFilters}
-import example.types.LocationTypes.{City, DepartmentCode}
+import escalade.models.GeographicFilter.{CityFilter, DepartmentFilter}
+import escalade.models.{GeographicFilter, UserFilters}
+import escalade.types.LocationTypes.{City, DepartmentCode}
 import zio.Console.{printLine, readLine}
 import zio.ZIO
 

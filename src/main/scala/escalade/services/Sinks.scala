@@ -1,7 +1,7 @@
-package example.services
+package escalade.services
 
-import example.models.{Metric, Transaction}
-import example.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
+import escalade.models.{Metric, Transaction}
+import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 import zio.ZIO
 import zio.stream.{ZSink, ZStream}
 
