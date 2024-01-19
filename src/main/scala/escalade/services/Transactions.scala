@@ -23,17 +23,6 @@ import escalade.types.RealEstateTypes.Category
  *
  * @param transaction The `Transaction` object to be validated.
  * @return `true` if the transaction meets all the validation criteria, otherwise `false`.
- *
- *         Example:
- * {{{
- *   val transaction = Transaction(...)
- *   val isValid = validateTransaction(transaction)
- *   if (isValid) {
- *     // Proceed with the transaction
- *   } else {
- *     // Handle invalid transaction
- *   }
- * }}}
  */
 def validateTransaction(transaction: Transaction): Boolean = {
   transaction.amount > 0 &&
@@ -59,15 +48,6 @@ def validateTransaction(transaction: Transaction): Boolean = {
  * @param envVars Contains environment variables including the start and end years for the range, the base URL for data, and the CSV separator.
  * @return A `ZIO` effect that, when executed, will either yield a `Map` from year to `ZStream` of `Transaction` objects
  *         or fail with a `Throwable` if an error occurs during data fetching or processing.
- *
- * Example:
- * {{{
- *   val envVars = EnvVars(...)
- *   val transactionsByYear: ZIO[Scope & Client, Throwable, Map[Int, ZStream[Any, Throwable, Transaction]]] = loadTransactions(envVars)
- *   transactionsByYear.map { transactions =>
- *     // Process transactions here
- *   }
- * }}}
  */
 def loadTransactions(envVars: EnvVars): ZIO[Scope & Client, Throwable, Map[Int, ZStream[Any, Throwable, Transaction]]] = {
   val urlsByYear = (envVars.startYear to envVars.endYear).map(year => (year, s"${envVars.dataUrl}/$year/full.csv.gz"))
@@ -106,16 +86,6 @@ def loadTransactions(envVars: EnvVars): ZIO[Scope & Client, Throwable, Map[Int, 
  * @param transactionsByYear A map of transaction streams, each associated with a specific year.
  * @param filters            The `UserFilters` object containing the filter criteria.
  * @return A `ZStream` of `Transaction` objects that meet the specified filter criteria.
- *
- *         Example:
- * {{{
- *   val transactions: Map[Int, ZStream[Any, Throwable, Transaction]] = ...
- *   val filters = UserFilters(...)
- *   val filteredTransactions: ZStream[Any, Throwable, Transaction] = filterTransactions(transactions, filters)
- *   filteredTransactions.foreach { transaction =>
- *     // Process each filtered transaction
- *   }
- * }}}
  */
 def filterTransactions(
                         transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],

@@ -26,6 +26,14 @@ object LocationTypes {
       CityPattern.matches(name)
     }
 
+    /**
+     * Calculate the Levenshtein distance between two strings.
+     * For fuzzy string matching purpose (taken from internet and AI)
+     *
+     * @param s1 The first input string.
+     * @param s2 The second input string.
+     * @return The Levenshtein distance between the two input strings.
+     */
     private def levenshtein(s1: String, s2: String): Int = {
       val memo = Array.tabulate(s2.length + 1, s1.length + 1) { (i, j) => if (i == 0) j else if (j == 0) i else 0 }
 

@@ -9,31 +9,13 @@ import zio.ZIO
 import java.io.IOException
 
 /**
- * Retrieves user input to create a set of user filters for property transactions.
+ * Prompts the user for property transaction filters.
  *
- * This function prompts the user to enter various criteria related to property transactions:
- * - Year of the transaction
- * - Minimum transaction amount
- * - Maximum transaction amount
- * - Type of property (e.g., apartment, house)
+ * This function collects user input for filtering property transactions based on criteria like year, amount,
+ * and property type. Empty inputs are treated as None. The function returns a ZIO effect with UserFilters
+ * or fails with an IOException.
  *
- * The user can leave any of these inputs empty if they do not wish to apply that particular filter.
- *
- * The function uses a for-comprehension to sequentially read and process user inputs. Inputs for
- * year, minimum amount, and maximum amount are expected to be integers and are converted to `Option[Int]`.
- * An empty input results in `None`. For the property type, the input is directly processed into an `Option[String]`,
- * with an empty input resulting in `None`.
- *
- * @return A `ZIO` effect that, when executed, will either yield `UserFilters` with the provided criteria
- *         or fail with an `IOException` if an error occurs during input reading.
- *
- *         Example:
- * {{{
- *   val userFilters: ZIO[Any, IOException, UserFilters] = getUserFilters
- *   userFilters.map { filters =>
- *     // Use filters for processing
- *   }
- * }}}
+ * @return A ZIO effect that yields UserFilters with user-provided criteria or an IOException on error.
  */
 def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
   year <- readLine("Entrez l'année de la transaction (ou laissez vide) : ").map(_.toIntOption)
@@ -47,7 +29,16 @@ def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
 } yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType), geographicFilter)
 
 
-
+/**
+ * Collects geographic filters for property transactions.
+ *
+ * This function presents the user with options to choose a geographic filter, either by city or department.
+ * Depending on the user's choice, it prompts for additional input such as city name or department code.
+ * The resulting geographic filter is wrapped in an `Option`.
+ *
+ * @return A ZIO effect that yields an `Option[GeographicFilter]` representing the selected geographic filter
+ *         or None if no filter is chosen. The effect can fail with an IOException.
+ */
 def getGeographicFilters: ZIO[Any, IOException, Option[GeographicFilter]] = {
   def selectFilter: ZIO[Any, IOException, Option[GeographicFilter]] = for {
     _ <- printLine("Choisissez un filtre : 1 - Ville, 2 - Département")

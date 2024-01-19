@@ -103,15 +103,6 @@ val medianAmountSink: ZSink[Any, Nothing, Transaction, Nothing, Option[Double]] 
  *
  * @param transactionStream A stream of `Transaction` objects to be processed.
  * @return A `ZIO` effect that, when executed, will yield a `Metric` object containing the calculated metrics.
- *
- *         Example:
- * {{{
- *   val transactionStream: ZStream[Any, Throwable, Transaction] = ...
- *   val metrics: ZIO[Any, Throwable, Metric] = computeMetrics(transactionStream)
- *   metrics.map { metric =>
- *     // Process the calculated metrics
- *   }
- * }}}
  */
 def computeMetrics(transactionStream: ZStream[Any, Throwable, Transaction]): ZIO[Any, Throwable, Metric] = {
   ZIO.scoped {
