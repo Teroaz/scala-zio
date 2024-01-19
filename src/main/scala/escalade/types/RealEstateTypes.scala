@@ -2,8 +2,10 @@ package escalade.types
 
 object RealEstateTypes {
   opaque type Category = String
+
   object Category {
     val valid_category = List("Appartement", "Maison")
+
     def apply(value: String): Option[Category] =
       Some(value).filter(isValidCategory)
 
@@ -13,6 +15,7 @@ object RealEstateTypes {
   }
 
   opaque type RoomCount = Int
+
   object RoomCount {
     def apply(value: Int): Option[RoomCount] =
       if (isValidRoomCount(value)) Some(value) else None
@@ -23,6 +26,7 @@ object RealEstateTypes {
   }
 
   opaque type ConstructedArea = Int
+
   object ConstructedArea {
     def apply(value: Int): Option[ConstructedArea] =
       if (isValidArea(value)) Some(value) else None
@@ -37,6 +41,7 @@ object RealEstateTypes {
   }
 
   opaque type LandArea = Int
+
   object LandArea {
     def apply(value: Int): Option[LandArea] =
       if (isValidArea(value)) Some(value) else None

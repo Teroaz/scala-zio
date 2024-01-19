@@ -1,9 +1,9 @@
 package escalade.helpers
 
 import zio.Console.printLine
+import zio.http.*
 import zio.http.ZClient.{Config, live}
 import zio.http.netty.NettyConfig
-import zio.http.*
 import zio.stream.ZStream
 import zio.{Duration, Scope, ZIO, ZLayer}
 
@@ -31,15 +31,15 @@ object Http {
     }
   }
 
-  
+
   private val customClientConfig: Config = Config.default.copy(
     idleTimeout = None,
   )
-  
+
   val customClientLayer: ZLayer[Any, Throwable, Client] = {
     val clientConfigLayer = ZLayer.succeed(customClientConfig)
     val nettyConfig = ZLayer.succeed(NettyConfig.default.copy(shutdownTimeoutDuration = Duration.Infinity));
-  
+
     (clientConfigLayer ++ DnsResolver.default ++ nettyConfig) >>> live
   }
 }

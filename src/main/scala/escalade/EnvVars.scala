@@ -1,6 +1,5 @@
 package escalade
 
-// TODO : Add Validation & constraints with NewTypes & OpaqueTypes
 case class EnvVars(
   dataUrl: String,
   startYear: Int,

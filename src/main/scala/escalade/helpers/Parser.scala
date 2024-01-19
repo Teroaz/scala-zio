@@ -6,8 +6,8 @@ import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, Room
 import zio.stream.ZPipeline.gunzip
 import zio.stream.ZStream
 
-import java.time.{LocalDate, ZoneId}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, ZoneId}
 import java.util.Date
 
 private val zoneId: ZoneId = ZoneId.systemDefault()

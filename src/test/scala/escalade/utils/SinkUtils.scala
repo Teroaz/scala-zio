@@ -1,9 +1,10 @@
 package escalade.utils
-import java.util.Date
+
 import escalade.models.{Location, RealEstate, Transaction}
 import escalade.types.LocationTypes.{DepartmentCode, GeoPoint, PostalCode}
 import escalade.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 
+import java.util.Date
 import scala.util.Random
 
 def generateTransactions(n: Int,

@@ -1,14 +1,14 @@
 package escalade.services
 
 import escalade.EnvVars
+import escalade.helpers.Http.fetchData
+import escalade.helpers.{decompressGzippedData, parseCsvLine}
 import escalade.models.{GeographicFilter, Transaction, UserFilters}
-import zio.{Console, Scope, ZIO}
+import escalade.types.LocationTypes.{City, DepartmentCode}
+import escalade.types.RealEstateTypes.Category
 import zio.http.Client
 import zio.stream.{ZPipeline, ZStream}
-import escalade.helpers.{decompressGzippedData, parseCsvLine}
-import escalade.helpers.Http.fetchData
-import escalade.types.LocationTypes.{DepartmentCode, City}
-import escalade.types.RealEstateTypes.Category
+import zio.{Console, Scope, ZIO}
 
 /**
  * Validates a real estate transaction based on certain criteria.

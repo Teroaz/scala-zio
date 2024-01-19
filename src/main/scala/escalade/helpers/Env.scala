@@ -1,13 +1,8 @@
 package escalade.helpers
 
 import escalade.EnvVars
-import escalade.models.Transaction
-import zio.http.Client
-import zio.stream.ZStream
-import zio.{Scope, ZIO}
-import zio.Console.printLine
-import zio.http.*
 import io.github.cdimascio.dotenv.Dotenv
+import zio.ZIO
 
 /**
  * Loads environment variables required for the application from a .env file using Dotenv.

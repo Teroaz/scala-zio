@@ -1,11 +1,11 @@
 package escalade.sinks
 
-import escalade.services.avgAmountSink
 import escalade.services.*
 import escalade.utils.*
 import munit.*
 import zio.*
 import zio.stream.ZStream
+
 class AvgSinkTests extends ZSuite {
   testZ("Average Sink should return average of merged iterables") {
     val n = 5
@@ -22,7 +22,7 @@ class AvgSinkTests extends ZSuite {
 
   testZ("Average Sink should return average of an iterable if many Transactions") {
     for {
-      result <- ZStream.fromIterable(generateTransactions(n=1000000))
+      result <- ZStream.fromIterable(generateTransactions(n = 1000000))
         .run(avgAmountSink)
       _ = assert(result == 100000.0)
     } yield ()

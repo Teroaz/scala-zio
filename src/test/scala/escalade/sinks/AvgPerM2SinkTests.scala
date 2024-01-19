@@ -1,8 +1,8 @@
 package escalade.sinks
 
 import escalade.models.*
-import escalade.types.RealEstateTypes.*
 import escalade.services.*
+import escalade.types.RealEstateTypes.*
 import escalade.utils.generateTransactions
 import munit.*
 import zio.*
@@ -19,7 +19,7 @@ class AvgPerM2SinkTests extends ZSuite {
       stream1 <- ZIO.succeed(ZStream.fromIterable(generateTransactions(n, fixedAmount = Some(amount1), fixedCA = ConstructedArea(area))))
       stream2 <- ZIO.succeed(ZStream.fromIterable(generateTransactions(n, fixedAmount = Some(amount2), fixedCA = ConstructedArea(area))))
       mergedStream = stream1.merge(stream2)
-        result <- mergedStream.run(avgPerM2Sink)
+      result <- mergedStream.run(avgPerM2Sink)
       _ = assert(result == ((n * (amount1 / area) + n * (amount2 / area)) / (n * 2)))
     } yield ()
   }
