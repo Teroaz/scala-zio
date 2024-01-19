@@ -1,12 +1,13 @@
 package example.services
 
 import example.EnvVars
-import example.helpers.Http.fetchData
-import example.models.{Transaction, UserFilters}
+import example.models.{GeographicFilter, Transaction, UserFilters}
 import zio.{Console, Scope, ZIO}
 import zio.http.Client
 import zio.stream.{ZPipeline, ZStream}
 import example.helpers.{decompressGzippedData, parseCsvLine}
+import example.helpers.Http.fetchData
+import example.types.LocationTypes.{DepartmentCode, City}
 import example.types.RealEstateTypes.Category
 
 /**
@@ -117,19 +118,22 @@ def loadTransactions(envVars: EnvVars): ZIO[Scope & Client, Throwable, Map[Int, 
  * }}}
  */
 def filterTransactions(
-                                transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],
-                                filters: UserFilters
-                              ): ZStream[Any, Throwable, Transaction] = {
+                        transactionsByYear: Map[Int, ZStream[Any, Throwable, Transaction]],
+                        filters: UserFilters
+                      ): ZStream[Any, Throwable, Transaction] = {
+  transactionsByYear.getOrElse(filters.year.getOrElse(2018), ZStream.empty)
+    .filter { transaction =>
+      filters.geographicFilter match {
+        case Some(GeographicFilter.CityFilter(city)) => City.isSimilar(transaction.estate.location.city, city)
+        case Some(GeographicFilter.DepartmentFilter(departmentCode)) => DepartmentCode.compareCodes(departmentCode, transaction.estate.location.departmentCode)
+        case None => true
+      }
+    }
 
-  val yearFilteredStream = filters.year match {
-    case Some(yr) => transactionsByYear.getOrElse(yr, ZStream.empty)
-    case None => transactionsByYear.getOrElse(2018, ZStream.empty)
-  }
+    .filter { transaction =>
+      filters.minAmount.forall(transaction.amount >= _) &&
+        filters.maxAmount.forall(transaction.amount <= _) &&
+        filters.propertyType.forall(_ == Category.value(transaction.estate.category))
+    }
 
-  // Step 2: Apply Other Filters
-  yearFilteredStream.filter { transaction =>
-    filters.minAmount.forall(transaction.amount >= _) &&
-      filters.maxAmount.forall(transaction.amount <= _) &&
-      filters.propertyType.forall(Category.value(transaction.estate.category) == _)
-  }
 }

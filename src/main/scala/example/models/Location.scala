@@ -6,7 +6,7 @@ case class Location(
                      suffix: Option[String],
                      street: String,
                      postalCode: PostalCode,
-                     city: String,
+                     city: City,
                      departmentCode: DepartmentCode,
                      geoPoint: GeoPoint
                    )

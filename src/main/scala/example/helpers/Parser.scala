@@ -1,7 +1,7 @@
 package example.helpers
 
 import example.models.{Location, RealEstate, Transaction}
-import example.types.LocationTypes.{DepartmentCode, GeoPoint, PostalCode}
+import example.types.LocationTypes.{City, DepartmentCode, GeoPoint, PostalCode}
 import example.types.RealEstateTypes.{Category, ConstructedArea, LandArea, RoomCount}
 import zio.stream.ZPipeline.gunzip
 import zio.stream.ZStream
@@ -53,11 +53,12 @@ def parseCsvLine(line: String, separator: Option[String]): ZStream[Any, Nothing,
         postalCode <- PostalCode(fields(9))
         departmentCode <- DepartmentCode(fields(12))
         geoPoint <- GeoPoint(fields(38).toDouble, fields(39).toDouble)
+        city <- City(fields(11))
       } yield Location(
         number = Option(fields(5)).filter(_.nonEmpty).map(_.toInt),
         suffix = Option(fields(6)),
         street = fields(7),
-        city = fields(11),
+        city = city,
         departmentCode = departmentCode,
         postalCode = postalCode,
         geoPoint = geoPoint

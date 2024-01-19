@@ -1,7 +1,9 @@
 package example.services
 
-import example.models.UserFilters
-import zio.Console.readLine
+import example.models.GeographicFilter.{CityFilter, DepartmentFilter}
+import example.models.{GeographicFilter, UserFilters}
+import example.types.LocationTypes.{City, DepartmentCode}
+import zio.Console.{printLine, readLine}
 import zio.ZIO
 
 import java.io.IOException
@@ -36,6 +38,35 @@ import java.io.IOException
 def getUserFilters: ZIO[Any, IOException, UserFilters] = for {
   year <- readLine("Entrez l'année de la transaction (ou laissez vide) : ").map(_.toIntOption)
   minAmount <- readLine("Entrez le montant minimum (ou laissez vide) : ").map(_.toIntOption)
-  maxAmount <- readLine("Entrez le montant maximun (ou laissez vide) : ").map(_.toIntOption)
+  maxAmount <- readLine("Entrez le montant maximum (ou laissez vide) : ").map(_.toIntOption)
   propertyType <- readLine("Entrez le type de bien (appartement/maison) (ou laissez vide) : ")
-} yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType))
+
+  _ <- printLine("Voulez-vous appliquer un filtre géographique ? (oui/non)")
+  geographicChoice <- readLine
+  geographicFilter <- if (geographicChoice.toLowerCase == "oui") getGeographicFilters else ZIO.succeed(None)
+} yield UserFilters(year, minAmount, maxAmount, if (propertyType.isEmpty) None else Some(propertyType), geographicFilter)
+
+
+
+def getGeographicFilters: ZIO[Any, IOException, Option[GeographicFilter]] = {
+  def selectFilter: ZIO[Any, IOException, Option[GeographicFilter]] = for {
+    _ <- printLine("Choisissez un filtre : 1 - Ville, 2 - Département")
+    choice <- readLine
+    filter <- choice match {
+      case "1" =>
+        readLine("Entrez le nom de la ville : ")
+          .map(City(_))
+          .map(optCity => optCity.map(city => CityFilter.apply(city)))
+
+      case "2" =>
+        readLine("Entrez le code du département : ")
+          .map(DepartmentCode(_))
+          .map(optDeptCode => optDeptCode.map(deptCode => DepartmentFilter.apply(deptCode)))
+
+      case _ =>
+        printLine("Choix invalide. Veuillez réessayer.").flatMap(_ => selectFilter)
+    }
+  } yield filter
+
+  selectFilter
+}
