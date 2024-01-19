@@ -1,11 +1,12 @@
 package example.services
 
 import example.EnvVars
+import example.helpers.Http.fetchData
 import example.models.{Transaction, UserFilters}
 import zio.{Console, Scope, ZIO}
 import zio.http.Client
 import zio.stream.{ZPipeline, ZStream}
-import example.helpers.{decompressGzippedData, fetchData, parseCsvLine}
+import example.helpers.{decompressGzippedData, parseCsvLine}
 import example.types.RealEstateTypes.Category
 
 /**

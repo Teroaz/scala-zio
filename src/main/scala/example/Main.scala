@@ -1,11 +1,12 @@
 package example
 
-import zio.*
-import zio.http.*
 import example.helpers.*
 import example.services.*
+import zio.*
+import zio.http.*
 
 object Main extends ZIOAppDefault {
+
   override def run = {
 
     val program = for {
@@ -20,7 +21,8 @@ object Main extends ZIOAppDefault {
       }.forever
     } yield ()
 
-    program.provide(Client.default, Scope.default)
+
+    program.provide(Scope.default, Http.customClientLayer)
   }
 }
 

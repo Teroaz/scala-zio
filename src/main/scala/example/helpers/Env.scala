@@ -7,7 +7,6 @@ import zio.stream.ZStream
 import zio.{Scope, ZIO}
 import zio.Console.printLine
 import zio.http.*
-import example.helpers.fetchData
 import io.github.cdimascio.dotenv.Dotenv
 
 /**

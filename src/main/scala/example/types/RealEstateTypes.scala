@@ -5,7 +5,7 @@ object RealEstateTypes {
   object Category {
     val valid_category = List("Appartement", "Maison")
     def apply(value: String): Option[Category] =
-      if (isValidCategory(value)) Some(value) else None
+      Some(value).filter(isValidCategory)
 
     private def isValidCategory(value: String): Boolean = valid_category.contains(value)
 
